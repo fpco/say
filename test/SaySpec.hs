@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module SaySpec (spec) where
 
 import Test.Hspec
@@ -12,7 +13,11 @@ import qualified Data.ByteString as S
 import Data.List (nub)
 
 encodings :: [TextEncoding]
-encodings = [utf8, utf16le, utf32be, char8]
+encodings = [utf8, utf16le, utf32be
+#if MIN_VERSION_base(4, 4, 0)
+    , char8
+#endif
+    ]
 
 newlines :: [NewlineMode]
 newlines = nub
