@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 module Say
     ( -- * Stdout
       say
@@ -14,20 +15,29 @@ module Say
     , hSayShow
     ) where
 
-import Control.Monad                   (void)
+import Control.Monad                   (join, void)
 import Control.Monad.IO.Class          (MonadIO, liftIO)
+import qualified Data.ByteString       as S
+import qualified Data.ByteString.Char8 as S8
 import Data.IORef
 import Data.Text                       (Text, pack)
+import qualified Data.Text.Encoding    as TE
 import Data.Text.Internal.Fusion       (stream)
 import Data.Text.Internal.Fusion.Types (Step (..), Stream (..))
 import GHC.IO.Buffer                   (Buffer (..), BufferState (..),
                                         CharBufElem, CharBuffer, RawCharBuffer,
                                         emptyBuffer, newCharBuffer,
                                         writeCharBuf)
+import GHC.IO.Encoding.Types           (textEncodingName)
 import GHC.IO.Handle.Internals         (wantWritableHandle)
 import GHC.IO.Handle.Text              (commitBuffer')
 import GHC.IO.Handle.Types             (BufferList (..), Handle__ (..))
 import System.IO
+
+#if MIN_VERSION_bytestring(0, 10, 4) && MIN_VERSION_text(1, 2, 0)
+import qualified Data.ByteString.Builder as BB
+import           Data.Monoid             (mappend)
+#endif
 
 -- | Send a 'Text' to standard output, appending a newline, and chunking the
 -- data. By default, the chunk size is 2048 characters, so any messages below
@@ -84,17 +94,28 @@ sayErrShow = hSayShow stderr
 --
 -- @since 0.1.0.0
 hSay :: MonadIO m => Handle -> Text -> m ()
-hSay h msg = liftIO $ do
-  (buf, nl) <- wantWritableHandle "hSay" h $ \h_ -> do
-    buf <- getSpareBuffer h_
-    return (buf, haOutputNL h_)
-  case nl of
-    CRLF -> writeBlocksCRLF buf str
-    LF   -> writeBlocksRaw  buf str
+hSay h msg =
+  liftIO $ join $ wantWritableHandle "hSay" h $ \h_ -> do
+    case haOutputNL h_ of
+      LF
+        | fmap textEncodingName (haCodec h_) == Just "UTF-8" -> return viaUtf8
+      nl -> do
+        buf <- getSpareBuffer h_
+        return $
+          case nl of
+            CRLF -> writeBlocksCRLF buf str
+            LF   -> writeBlocksRaw  buf str
   -- Note that the release called below will return the buffer to the
   -- list of spares
   where
     str = stream msg
+
+    viaUtf8 :: IO ()
+#if MIN_VERSION_bytestring(0, 10, 4) && MIN_VERSION_text(1, 2, 0)
+    viaUtf8 = BB.hPutBuilder h (TE.encodeUtf8Builder msg `mappend` BB.word8 10)
+#else
+    viaUtf8 = S8.hPut h (TE.encodeUtf8 msg `S.snoc` 10)
+#endif
 
     getSpareBuffer :: Handle__ -> IO CharBuffer
     getSpareBuffer Handle__{haCharBuffer=ref, haBuffers=spare_ref} = do

@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Say
   build-depends:       base >= 4.3 && < 5
+                     , bytestring
                      , text
                      , transformers
   default-language:    Haskell2010
