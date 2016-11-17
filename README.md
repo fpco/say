@@ -23,7 +23,28 @@ On the last point: for the most part, you can make the following substitutions
 in your API usage:
 
 * Replace `putStrLn` with `say`
-* Replace `print` with `say'`
+* Replace `print` with `sayShow`
+* If you're using a `String` instead of `Text`, replace `putStrLn` with `sayString`
 
-In addition, `sayErr` and `sayErr'` work on standard error instead, and `hSay`
-and `hSay'` work on arbitrary `Handle`s.
+In addition, `sayErr`, `sayErrString` and `sayErrShow` work on
+standard error instead, and `hSay`, `hSayString` and `hSayShow` work
+on arbitrary `Handle`s.
+
+```haskell
+#!/usr/bin/env stack
+-- stack --install-ghc --resolver lts-6.23 runghc --package async --package say
+import Control.Concurrent.Async (mapConcurrently)
+import Control.Monad            (forM_, void)
+import Say                      (sayString)
+
+worker :: Int -> IO ()
+worker ident = forM_ [1..1000] $ \msg -> sayString $ concat
+    [ "Hello, I am worker #"
+    , show ident
+    , ", and this is message #"
+    , show msg
+    ]
+
+main :: IO ()
+main = void $ mapConcurrently worker [1..100]
+```

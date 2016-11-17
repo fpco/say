@@ -2,13 +2,16 @@
 module Say
     ( -- * Stdout
       say
-    , say'
+    , sayString
+    , sayShow
       -- * Stderr
     , sayErr
-    , sayErr'
+    , sayErrString
+    , sayErrShow
       -- * Handle
     , hSay
-    , hSay'
+    , hSayString
+    , hSayShow
     ) where
 
 import Control.Monad                   (void)
@@ -36,6 +39,15 @@ say :: MonadIO m => Text -> m ()
 say = hSay stdout
 {-# INLINE say #-}
 
+-- | Same as 'say', but operates on a 'String'. Note that this will
+-- force the entire @String@ into memory at once, and will fail for
+-- infinite @String@s.
+--
+-- @since 0.1.0.0
+sayString :: MonadIO m => String -> m ()
+sayString = hSayString stdout
+{-# INLINE sayString #-}
+
 -- | Same as 'say', but for instances of 'Show'.
 --
 -- If your @Show@ instance generates infinite output, this will fail. However,
@@ -43,9 +55,9 @@ say = hSay stdout
 -- instance anyway.
 --
 -- @since 0.1.0.0
-say' :: (MonadIO m, Show a) => a -> m ()
-say' = hSay' stdout
-{-# INLINE say' #-}
+sayShow :: (MonadIO m, Show a) => a -> m ()
+sayShow = hSayShow stdout
+{-# INLINE sayShow #-}
 
 -- | Same as 'say', but data is sent to standard error.
 --
@@ -54,12 +66,19 @@ sayErr :: MonadIO m => Text -> m ()
 sayErr = hSay stderr
 {-# INLINE sayErr #-}
 
--- | Same as 'say'', but data is sent to standard error.
+-- | Same as 'sayString', but data is sent to standard error.
 --
 -- @since 0.1.0.0
-sayErr' :: (MonadIO m, Show a) => a -> m ()
-sayErr' = hSay' stderr
-{-# INLINE sayErr' #-}
+sayErrString :: MonadIO m => String -> m ()
+sayErrString = hSayString stderr
+{-# INLINE sayErrString #-}
+
+-- | Same as 'sayShow', but data is sent to standard error.
+--
+-- @since 0.1.0.0
+sayErrShow :: (MonadIO m, Show a) => a -> m ()
+sayErrShow = hSayShow stderr
+{-# INLINE sayErrShow #-}
 
 -- | Same as 'say', but data is sent to the provided 'Handle'.
 --
@@ -149,9 +168,16 @@ hSay h msg = liftIO $ do
         commitBuffer' raw sz count flush release
 {-# SPECIALIZE hSay :: Handle -> Text -> IO () #-}
 
--- | Same as 'say'', but data is sent to the provided 'Handle'.
+-- | Same as 'sayString', but data is sent to the provided 'Handle'.
 --
 -- @since 0.1.0.0
-hSay' :: (MonadIO m, Show a) => Handle -> a -> m ()
-hSay' h = hSay h . pack . show
-{-# INLINE hSay' #-}
+hSayString :: MonadIO m => Handle -> String -> m ()
+hSayString h = hSay h . pack
+{-# INLINE hSayString #-}
+
+-- | Same as 'sayShow', but data is sent to the provided 'Handle'.
+--
+-- @since 0.1.0.0
+hSayShow :: (MonadIO m, Show a) => Handle -> a -> m ()
+hSayShow h = hSayString h . show
+{-# INLINE hSayShow #-}
