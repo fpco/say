@@ -1,6 +1,6 @@
 name:                say
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            Send textual messages to a Handle in a thread-friendly way
 description:         Please see README.md
 homepage:            https://github.com/fpco/say#readme
 license:             MIT
