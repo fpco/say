@@ -32,7 +32,7 @@ tests:
     dependencies:
     - hspec
     - say
-    - temporary
+    - unliftio
 benchmarks:
   say-bench:
     main: say-bench.hs
@@ -43,6 +43,6 @@ benchmarks:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - criterion
+    - gauge
     - say
-    - temporary
+    - unliftio

@@ -1,6 +1,6 @@
-import Criterion.Main
+import Gauge
 import qualified System.IO as IO
-import System.IO.Temp
+import UnliftIO.Temporary
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.IO as TIO

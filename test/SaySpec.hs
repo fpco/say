@@ -8,7 +8,7 @@ import Control.Monad (forM_)
 import Data.Text (pack)
 import qualified Data.Text.IO as T
 import System.IO
-import System.IO.Temp (withSystemTempFile)
+import UnliftIO.Temporary (withSystemTempFile)
 import qualified Data.ByteString as S
 import Data.List (nub)
 
