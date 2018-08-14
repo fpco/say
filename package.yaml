@@ -1,0 +1,48 @@
+name:        say
+version:     0.1.0.0
+synopsis:    Send textual messages to a Handle in a thread-friendly way
+description: Please see the README and documentation at <https://www.stackage.org/package/say>
+category:    Text
+author:      Michael Snoyman
+maintainer:  michael@snoyman.com
+copyright:   2016-2018 FP Complete
+license:     MIT
+github:      fpco/say
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+dependencies:
+- base >=4.3 && <5
+- bytestring >=0.10.4
+- text >=1.2
+- transformers
+
+library:
+  source-dirs: src
+tests:
+  say-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hspec
+    - say
+    - temporary
+benchmarks:
+  say-bench:
+    main: say-bench.hs
+    source-dirs: bench
+    ghc-options:
+    - -threaded
+    - -O2
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - criterion
+    - say
+    - temporary
