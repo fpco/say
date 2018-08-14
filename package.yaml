@@ -14,7 +14,7 @@ extra-source-files:
 - ChangeLog.md
 
 dependencies:
-- base >=4.3 && <5
+- base >=4.9.1 && <5
 - bytestring >=0.10.4
 - text >=1.2
 - transformers
