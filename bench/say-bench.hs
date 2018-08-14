@@ -1,4 +1,5 @@
 import Gauge
+import Gauge.Main
 import qualified System.IO as IO
 import UnliftIO.Temporary
 import qualified Data.Text as T
